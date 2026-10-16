@@ -16,6 +16,8 @@ Sign in with an admin account (dev seed: `sutraedu.official@gmail.com` / `sutra@
 | Books, book detail (versions, new version, reprocess, archive, edit, usage) | `view:books` / `manage:books` / `upload:books` |
 | Curriculum: boards, classes, subjects, syllabi | `view:curriculum` / `manage:curriculum` |
 | Processing Jobs | `view:jobs` / `manage:jobs` |
+| AI Studio: generate text, audio, images, video from book pages; review and approve | `view:books`, `generate:content`, `review:content` |
+| AI Models: the model endpoint for each task | `view:model_configs` / `manage:model_configs` |
 | Students & Parents (read-only) | `view:students` |
 | Admin Staff, Roles & Permissions | `manage:admin_accounts`, `manage:roles` |
 | Cloud Storage (status, test upload, bucket setup steps) | `manage:system_settings` |

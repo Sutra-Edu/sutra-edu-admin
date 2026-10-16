@@ -6,6 +6,8 @@ export const P = {
   MANAGE_BOOKS: "manage:books",
   UPLOAD_BOOKS: "upload:books",
   REVIEW_PAGES: "review:pages",
+  GENERATE_CONTENT: "generate:content",
+  REVIEW_CONTENT: "review:content",
   VIEW_JOBS: "view:jobs",
   MANAGE_JOBS: "manage:jobs",
   VIEW_MODEL_CONFIGS: "view:model_configs",
@@ -23,6 +25,7 @@ export type Permission = (typeof P)[keyof typeof P];
 export const PERMISSION_GROUPS: { title: string; prefix: string[] }[] = [
   { title: "Curriculum", prefix: ["view:curriculum", "manage:curriculum"] },
   { title: "Books", prefix: ["view:books", "manage:books", "upload:books", "review:pages"] },
+  { title: "AI content", prefix: ["generate:content", "review:content"] },
   { title: "Processing", prefix: ["view:jobs", "manage:jobs", "view:model_configs", "manage:model_configs"] },
   { title: "Students", prefix: ["view:students"] },
   { title: "Administration", prefix: ["manage:admin_accounts", "manage:roles", "view:audit_logs", "manage:system_settings"] },

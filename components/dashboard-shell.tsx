@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  Activity, BookOpen, Cloud, GraduationCap, KeyRound, LayoutDashboard, Library, ListChecks, LogOut, Menu,
+  Activity, BookOpen, Cloud, Cpu, Sparkles, GraduationCap, KeyRound, LayoutDashboard, Library, ListChecks, LogOut, Menu,
   ShieldCheck, ShieldOff, Upload, UserCog, Users, X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -31,6 +31,13 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { name: "Books", href: "/dashboard/books", icon: Library, permission: [P.VIEW_BOOKS] },
       { name: "Curriculum", href: "/dashboard/curriculum", icon: BookOpen, permission: [P.VIEW_CURRICULUM] },
       { name: "Processing Jobs", href: "/dashboard/jobs", icon: ListChecks, permission: [P.VIEW_JOBS] },
+    ],
+  },
+  {
+    title: "AI",
+    items: [
+      { name: "AI Studio", href: "/dashboard/ai", icon: Sparkles, permission: [P.VIEW_BOOKS] },
+      { name: "AI Models", href: "/dashboard/models", icon: Cpu, permission: [P.VIEW_MODEL_CONFIGS] },
     ],
   },
   {

@@ -84,3 +84,65 @@ export interface PermissionRow {
   action: string;
   description: string | null;
 }
+
+export type GeneratedKind = "TEXT" | "AUDIO" | "IMAGE" | "VIDEO";
+export type GenerationStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED";
+export type ReviewStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED";
+
+export interface GeneratedAsset {
+  id: string;
+  kind: GeneratedKind;
+  role: string;
+  sceneIndex: number | null;
+  r2Key: string;
+  mimeType: string;
+  sizeBytes: number | null;
+  durationSec: number | null;
+  width: number | null;
+  height: number | null;
+  title: string | null;
+  text: string | null;
+  metadata: Record<string, unknown> | null;
+  reviewStatus: ReviewStatus;
+  reviewNote: string | null;
+  url: string;
+}
+
+export interface Generation {
+  id: string;
+  kind: GeneratedKind;
+  purpose: string;
+  pageFrom: number;
+  pageTo: number;
+  language: string;
+  instructions: string | null;
+  status: GenerationStatus;
+  error: string | null;
+  progress: { step: string; done?: number; total?: number } | null;
+  createdAt: string;
+  finishedAt: string | null;
+  book: { id: string; code: string; title: string };
+  bookFile: { id: string; version: number };
+  requestedBy: { id: string; firstName: string | null; lastName: string | null; email: string | null } | null;
+  assets?: GeneratedAsset[];
+  _count?: { assets: number };
+}
+
+export interface GenerationOptions {
+  maxPages: number;
+  languages: string[];
+  kinds: { kind: GeneratedKind; purposes: { value: string; label: string }[]; models: { task: string; active: boolean }[]; ready: boolean }[];
+}
+
+export interface ModelConfig {
+  id: string;
+  task: string;
+  name: string;
+  provider: string;
+  endpointUrl: string;
+  modelName: string | null;
+  params: Record<string, unknown> | null;
+  isActive: boolean;
+  timeoutMs: number;
+  updatedAt: string;
+}

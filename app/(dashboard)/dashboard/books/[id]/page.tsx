@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { Archive, ArrowLeft, ExternalLink, Pencil, RefreshCw, RotateCcw, Upload } from "lucide-react";
+import { Archive, ArrowLeft, ExternalLink, Pencil, RefreshCw, RotateCcw, Sparkles, Upload } from "lucide-react";
 import api, { errorMessage } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useApi } from "@/lib/hooks";
@@ -97,6 +97,11 @@ export default function BookDetailPage() {
           <StatusBadge status={book.status} />
           {can(P.MANAGE_BOOKS) && !archived && <Button variant="secondary" onClick={() => setEditing(true)}><Pencil className="w-4 h-4" /> Edit</Button>}
           {can(P.UPLOAD_BOOKS) && !archived && <Button onClick={() => setUploading(true)}><Upload className="w-4 h-4" /> New version</Button>}
+          {can(P.GENERATE_CONTENT) && !archived && book.files.some((f) => f.isCurrent) && (
+            <Link href={`/dashboard/ai?bookId=${book.id}`} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+              <Sparkles className="w-4 h-4" /> Generate with AI
+            </Link>
+          )}
           {can(P.MANAGE_BOOKS) && (archived
             ? <Button variant="secondary" loading={busy === "restore"} onClick={() => action("restore", () => api.post(`/admin/books/${id}/restore`), "Book restored")}><RotateCcw className="w-4 h-4" /> Restore</Button>
             : <Button variant="danger" loading={busy === "archive"} onClick={archive}><Archive className="w-4 h-4" /> Archive</Button>)}
@@ -152,7 +157,9 @@ export default function BookDetailPage() {
                       {f.status !== "PENDING_UPLOAD" && <Button size="sm" variant="ghost" onClick={() => openPdf(f)} title="Open the original PDF"><ExternalLink className="w-3.5 h-3.5" /> PDF</Button>}
                       {can(P.UPLOAD_BOOKS) && f.status !== "PENDING_UPLOAD" && (
                         <Button size="sm" variant="ghost" loading={busy === `re-${f.id}`} title="Split and extract again"
-                          onClick={() => confirm("Reprocess this version? Its extracted pages are discarded and rebuilt.") &&
+                          onClick={() => confirm(f.isCurrent
+                            ? "Reprocess the live version? Its pages are discarded and rebuilt, and students can't read this book until processing finishes. Uploading a new version avoids that."
+                            : "Reprocess this version? Its extracted pages are discarded and rebuilt.") &&
                             action(`re-${f.id}`, () => api.post(`/admin/books/${id}/files/${f.id}/reprocess`), `v${f.version} queued for reprocessing`)}>
                           <RefreshCw className="w-3.5 h-3.5" /> Reprocess
                         </Button>
