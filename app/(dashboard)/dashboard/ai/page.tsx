@@ -178,6 +178,9 @@ function NewGeneration({ initialBookId, onCreated }: { initialBookId: string; on
           </div>
         </div>
 
+        {options.data && !options.data.mediaConfigured && (
+          <Alert>Media bucket not configured: set R2_MEDIA_BUCKET in the backend .env. <Link href="/dashboard/storage" className="underline font-medium">Check storage</Link></Alert>
+        )}
         {missing.length > 0 && (
           <Alert kind="info">
             {KIND_META[kind].label} needs an active model for: {missing.join(", ")}. <Link href="/dashboard/models" className="underline font-medium">Set up AI models</Link>
@@ -222,7 +225,7 @@ function NewGeneration({ initialBookId, onCreated }: { initialBookId: string; on
         )}
         {rangeError && <p className="text-xs text-red-600">{rangeError}</p>}
         {error && <Alert>{error}</Alert>}
-        <Button type="submit" className="w-full" loading={saving} disabled={!bookId || !purpose || !!rangeError}>
+        <Button type="submit" className="w-full" loading={saving} disabled={!bookId || !purpose || !!rangeError || options.data?.mediaConfigured === false}>
           <Sparkles className="w-4 h-4" /> Generate
         </Button>
       </form>

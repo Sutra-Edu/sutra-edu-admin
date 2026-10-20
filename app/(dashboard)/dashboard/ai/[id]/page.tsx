@@ -140,7 +140,7 @@ export default function GenerationPage() {
             <Row label="Requested">{gen.requestedBy ? fullName(gen.requestedBy) : "—"} · {fmtDate(gen.createdAt)}</Row>
             {gen.finishedAt && <Row label="Finished">{fmtDate(gen.finishedAt)}</Row>}
             <Row label="Files">{assets.length} ({fmtBytes(assets.reduce((n, a) => n + (a.sizeBytes ?? 0), 0))})</Row>
-            {main && <Row label="Stored at"><code className="text-xs break-all bg-slate-100 rounded px-1.5 py-0.5">{main.r2Key}</code></Row>}
+            {main && <Row label="Stored at"><code className="text-xs break-all bg-slate-100 rounded px-1.5 py-0.5">{main.r2Bucket}/{main.r2Key}</code></Row>}
           </dl>
         </Card>
       </div>

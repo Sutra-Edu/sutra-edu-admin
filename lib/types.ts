@@ -47,6 +47,7 @@ export interface BookFile {
   sizeBytes: number | null;
   pageCount: number | null;
   status: FileStatus;
+  r2Bucket: string;
   error: string | null;
   createdAt: string;
   pageStatus?: Record<string, number>;
@@ -105,6 +106,7 @@ export interface GeneratedAsset {
   metadata: Record<string, unknown> | null;
   reviewStatus: ReviewStatus;
   reviewNote: string | null;
+  r2Bucket: string;
   url: string;
 }
 
@@ -129,6 +131,7 @@ export interface Generation {
 }
 
 export interface GenerationOptions {
+  mediaConfigured: boolean;
   maxPages: number;
   languages: string[];
   kinds: { kind: GeneratedKind; purposes: { value: string; label: string }[]; models: { task: string; active: boolean }[]; ready: boolean }[];
