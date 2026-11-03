@@ -105,6 +105,11 @@ export default function SetupPage() {
                 Re-index books
               </Button>
             )}
+            {can(P.MANAGE_MODEL_CONFIGS) && (
+              <Button variant="secondary" loading={busy === "embed"} onClick={() => run("embed", "/admin/setup/embed-all", {}, () => "Re-embedding every passage with the active embedding model")}>
+                Re-embed all
+              </Button>
+            )}
             {can(P.GENERATE_CONTENT) && (
               <Button loading={busy === "autopilot"} onClick={() => run("autopilot", "/admin/setup/autopilot/run", {}, planned)}>
                 <Rocket className="w-4 h-4" /> Run autopilot
