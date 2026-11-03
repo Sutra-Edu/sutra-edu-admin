@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  Activity, BookOpen, Cloud, Cpu, Sparkles, GraduationCap, KeyRound, LayoutDashboard, Library, ListChecks, LogOut, Menu,
+  Activity, BookOpen, ClipboardCheck, Cloud, Cpu, Rocket, Settings2, Sparkles, GraduationCap, KeyRound, LayoutDashboard, Library, ListChecks, LogOut, Menu,
   ShieldCheck, ShieldOff, Upload, UserCog, Users, X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -22,7 +22,11 @@ interface NavItem {
 const NAV: { title: string; items: NavItem[] }[] = [
   {
     title: "Overview",
-    items: [{ name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permission: null }],
+    items: [
+      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permission: null },
+      { name: "Setup", href: "/dashboard/setup", icon: Rocket, permission: null },
+      { name: "Review Queue", href: "/dashboard/review", icon: ClipboardCheck, permission: [P.REVIEW_CONTENT, P.MANAGE_BOOKS, P.REVIEW_GAME_CONTENT] },
+    ],
   },
   {
     title: "Content",
@@ -38,6 +42,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
     items: [
       { name: "AI Studio", href: "/dashboard/ai", icon: Sparkles, permission: [P.VIEW_BOOKS] },
       { name: "AI Models", href: "/dashboard/models", icon: Cpu, permission: [P.VIEW_MODEL_CONFIGS] },
+      { name: "AI Settings", href: "/dashboard/ai-settings", icon: Settings2, permission: [P.VIEW_MODEL_CONFIGS] },
     ],
   },
   {
