@@ -11,17 +11,32 @@ import type { ModelConfig } from "@/lib/types";
 
 // What each task is used for (mirrors ModelTask in the backend schema)
 const TASKS: { task: string; label: string; use: string }[] = [
-  { task: "LLM", label: "Language model", use: "Writes lessons, summaries, narration scripts, image prompts and video storyboards" },
-  { task: "TTS", label: "Text to speech", use: "Narration audio for lessons and video scenes" },
+  { task: "LLM", label: "Language model", use: "Tutor answers, topic → page mapping, lessons, notes, quizzes, scripts, game rounds, learner notes" },
+  { task: "EMBEDDING", label: "Embeddings", use: "Tutor searches every book of a syllabus by meaning (keyword search works without it)" },
+  { task: "MODERATION", label: "Moderation", use: "Child-safety check on students' questions and the tutor's answers" },
+  { task: "STT", label: "Speech to text", use: "Voice doubts and vivas" },
+  { task: "TTS", label: "Text to speech", use: "Narration, video voice-over, the 3D tutor's voice (ElevenLabs also gives lip-sync timings)" },
+  { task: "VISION", label: "Vision", use: "Describes book figures; reads students' photos of questions" },
   { task: "IMAGE_GEN", label: "Image generation", use: "Illustrations, diagrams and video scene images" },
   { task: "VIDEO_GEN", label: "Video assembly", use: "Turns scene images + narration into a video" },
   { task: "OCR", label: "OCR", use: "Reads scanned pages that have no text layer" },
   { task: "LAYOUT", label: "Layout", use: "Finds headings, paragraphs, figures, tables on each page" },
-  { task: "VISION", label: "Vision", use: "Describes figures found in the books" },
   { task: "EQUATION", label: "Equations & tables", use: "Turns equations into LaTeX and tables into Markdown" },
-  { task: "EMBEDDING", label: "Embeddings", use: "Search over book content (later)" },
   { task: "GRADING", label: "Grading", use: "Marks student answers (later)" },
 ];
+
+const ENDPOINT_HINT: Record<string, string> = {
+  runpod: "https://api.runpod.ai/v2/<endpoint-id>",
+  http: "The backend POSTs { task, model, params, input } here",
+  openai: "API base, e.g. https://api.openai.com/v1 · Gemini: https://generativelanguage.googleapis.com/v1beta/openai · vLLM on RunPod: https://api.runpod.ai/v2/<id>/openai/v1",
+  elevenlabs: "https://api.elevenlabs.io",
+};
+const PARAMS_HINT: Record<string, string> = {
+  runpod: 'Model-specific options, e.g. {"voice": "anushka"}',
+  http: 'Model-specific options, e.g. {"voice": "anushka"}',
+  openai: 'Optional. {"apiKeyEnv": "GEMINI_API_KEY"} names the server env var holding the key (default OPENAI_API_KEY); TTS: {"voice": "alloy"}',
+  elevenlabs: '{"voiceId": "<voice id>", "voices": {"hi": "<voice id>"}} · key from ELEVENLABS_API_KEY (or "apiKeyEnv")',
+};
 
 export default function ModelsPage() {
   const { can } = useAuth();
@@ -143,15 +158,17 @@ function ModelModal({ model, task, onClose, onSaved }: { model: ModelConfig | nu
             <Select value={form.provider} onChange={(e) => setForm({ ...form, provider: e.target.value })}>
               <option value="runpod">RunPod serverless</option>
               <option value="http">HTTP (own service)</option>
+              <option value="openai">OpenAI-compatible API (OpenAI, Gemini, Groq, vLLM…)</option>
+              <option value="elevenlabs">ElevenLabs (TTS with lip-sync timings)</option>
             </Select>
           </Field>
           <Field label="Timeout (ms)"><Input type="number" min={1000} value={form.timeoutMs} onChange={(e) => setForm({ ...form, timeoutMs: e.target.value })} /></Field>
         </div>
-        <Field label="Endpoint URL" required hint={form.provider === "runpod" ? "https://api.runpod.ai/v2/<endpoint-id>" : "The backend POSTs { task, model, params, input } here"}>
+        <Field label="Endpoint URL" required hint={ENDPOINT_HINT[form.provider] ?? ""}>
           <Input value={form.endpointUrl} onChange={(e) => setForm({ ...form, endpointUrl: e.target.value })} />
         </Field>
-        <Field label="Model name" hint="Passed to the worker; optional"><Input value={form.modelName} onChange={(e) => setForm({ ...form, modelName: e.target.value })} /></Field>
-        <Field label="Params (JSON)" hint='Model-specific options, e.g. {"voice": "anushka"}'>
+        <Field label="Model name" hint={form.provider === "openai" ? "Required, e.g. gpt-4.1-mini, gemini-2.5-flash, text-embedding-3-small, whisper-1" : form.provider === "elevenlabs" ? "e.g. eleven_multilingual_v2" : "Passed to the worker; optional"}><Input value={form.modelName} onChange={(e) => setForm({ ...form, modelName: e.target.value })} /></Field>
+        <Field label="Params (JSON)" hint={PARAMS_HINT[form.provider] ?? ""}>
           <Textarea rows={3} className="font-mono text-xs" value={form.params} onChange={(e) => setForm({ ...form, params: e.target.value })} />
         </Field>
         {!model && (

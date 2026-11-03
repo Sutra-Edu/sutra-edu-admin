@@ -13,6 +13,10 @@ export const P = {
   VIEW_MODEL_CONFIGS: "view:model_configs",
   MANAGE_MODEL_CONFIGS: "manage:model_configs",
   VIEW_STUDENTS: "view:students",
+  VIEW_GAMIFICATION: "view:gamification",
+  MANAGE_GAMIFICATION: "manage:gamification",
+  MANAGE_GAMES: "manage:games",
+  REVIEW_GAME_CONTENT: "review:game_content",
   MANAGE_ADMIN_ACCOUNTS: "manage:admin_accounts",
   MANAGE_ROLES: "manage:roles",
   VIEW_AUDIT_LOGS: "view:audit_logs",
@@ -28,6 +32,7 @@ export const PERMISSION_GROUPS: { title: string; prefix: string[] }[] = [
   { title: "AI content", prefix: ["generate:content", "review:content"] },
   { title: "Processing", prefix: ["view:jobs", "manage:jobs", "view:model_configs", "manage:model_configs"] },
   { title: "Students", prefix: ["view:students"] },
+  { title: "Games & rewards", prefix: ["view:gamification", "manage:gamification", "manage:games", "review:game_content"] },
   { title: "Administration", prefix: ["manage:admin_accounts", "manage:roles", "view:audit_logs", "manage:system_settings"] },
 ];
 
