@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Search } from "lucide-react";
 import { useApi } from "@/lib/hooks";
 import { Alert, Badge, Card, EmptyState, Input, Modal, PageHeader, Spinner, StatusBadge, Table, Td, fmtDate, fullName } from "@/components/ui";
@@ -89,6 +90,9 @@ function LearnerModal({ id, onClose }: { id: string; onClose: () => void }) {
           {u.userType === "STUDENT" && <>
             <Item label="Board">{u.board?.name ?? "—"}</Item>
             <Item label="Class">{u.academicClass?.name ?? "—"}{u.stream ? ` · ${u.stream.name}` : ""}</Item>
+            <div className="col-span-2">
+              <Link href={`/dashboard/students/${u.id}`} className="text-sm font-medium text-indigo-600 hover:underline">Learning profile, points and plan →</Link>
+            </div>
             <div className="col-span-2">
               <dt className="text-xs uppercase tracking-wide text-slate-500">Profile</dt>
               <dd className="mt-1">{u.profile?.complete ? <Badge color="green">complete</Badge> : <Badge color="amber">missing: {u.profile?.missing.join(", ")}</Badge>}</dd>

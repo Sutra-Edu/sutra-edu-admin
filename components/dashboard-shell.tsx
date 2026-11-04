@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  Activity, BookOpen, ClipboardCheck, Cloud, Cpu, Rocket, Settings2, Sparkles, GraduationCap, KeyRound, LayoutDashboard, Library, ListChecks, LogOut, Menu,
+  Activity, Bell, BookOpen, ClipboardCheck, Cloud, Cpu, CreditCard, Gamepad2, Medal, PenLine, Rocket, Settings2, Sparkles, GraduationCap, KeyRound, LayoutDashboard, Library, ListChecks, LogOut, Menu,
   ShieldCheck, ShieldOff, Upload, UserCog, Users, X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -35,6 +35,8 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { name: "Books", href: "/dashboard/books", icon: Library, permission: [P.VIEW_BOOKS] },
       { name: "Curriculum", href: "/dashboard/curriculum", icon: BookOpen, permission: [P.VIEW_CURRICULUM] },
       { name: "Processing Jobs", href: "/dashboard/jobs", icon: ListChecks, permission: [P.VIEW_JOBS] },
+      { name: "Games", href: "/dashboard/games", icon: Gamepad2, permission: [P.MANAGE_GAMES] },
+      { name: "Rewards & Avatar", href: "/dashboard/gamification", icon: Medal, permission: [P.VIEW_GAMIFICATION] },
     ],
   },
   {
@@ -49,6 +51,9 @@ const NAV: { title: string; items: NavItem[] }[] = [
     title: "People",
     items: [
       { name: "Students & Parents", href: "/dashboard/students", icon: GraduationCap, permission: [P.VIEW_STUDENTS] },
+      { name: "Exam Marking", href: "/dashboard/exams", icon: PenLine, permission: [P.GRADE_EXAMS] },
+      { name: "Notifications", href: "/dashboard/notifications", icon: Bell, permission: [P.SEND_NOTIFICATIONS] },
+      { name: "Plans & Payments", href: "/dashboard/billing", icon: CreditCard, permission: [P.VIEW_SUBSCRIPTIONS] },
       { name: "Admin Staff", href: "/dashboard/admins", icon: Users, permission: [P.MANAGE_ADMIN_ACCOUNTS] },
       { name: "Roles & Permissions", href: "/dashboard/roles", icon: KeyRound, permission: [P.MANAGE_ROLES] },
     ],
