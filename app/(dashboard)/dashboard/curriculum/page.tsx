@@ -84,7 +84,11 @@ function CatalogTab({ kind }: { kind: Kind }) {
 }
 
 function CatalogModal({ kind, item, onClose, onSaved }: { kind: Kind; item: CatalogItem | null; onClose: () => void; onSaved: () => void }) {
-  const [form, setForm] = useState({ code: item?.code ?? "", name: item?.name ?? "", sortOrder: String(item?.sortOrder ?? 0) });
+  const it = (item ?? {}) as Partial<CatalogItem> & { description?: string | null; icon?: string | null; color?: string | null; tag?: string | null; suggestion?: string | null };
+  const [form, setForm] = useState({
+    code: item?.code ?? "", name: item?.name ?? "", sortOrder: String(item?.sortOrder ?? 0),
+    description: it.description ?? "", icon: it.icon ?? "", color: it.color ?? "", tag: it.tag ?? "", suggestion: it.suggestion ?? "",
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const hints: Record<Kind, [string, string]> = {
@@ -94,7 +98,12 @@ function CatalogModal({ kind, item, onClose, onSaved }: { kind: Kind; item: Cata
   const save = async () => {
     setSaving(true);
     setError(null);
-    const body = { code: form.code.trim(), name: form.name.trim(), sortOrder: Number(form.sortOrder) || 0 };
+    const opt = (v: string) => (v.trim() ? v.trim() : null);
+    const body = {
+      code: form.code.trim(), name: form.name.trim(), sortOrder: Number(form.sortOrder) || 0,
+      description: opt(form.description), icon: opt(form.icon), color: opt(form.color), tag: opt(form.tag),
+      ...(kind === "class" ? { suggestion: opt(form.suggestion) } : {}),
+    };
     try {
       if (item) await api.patch(`/admin/catalog/${kind}/${item.id}`, body);
       else await api.post(`/admin/catalog/${kind}`, body);
@@ -115,6 +124,20 @@ function CatalogModal({ kind, item, onClose, onSaved }: { kind: Kind; item: Cata
           <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder={hints[kind][0]} />
         </Field>
         <Field label="Sort order"><Input type="number" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: e.target.value })} /></Field>
+        <div className="pt-2 border-t border-slate-100 text-xs font-semibold uppercase text-slate-500">How the app shows it</div>
+        <Field label="Description" hint={kind === "board" ? 'Under the name, e.g. "UBSE Curriculum"' : kind === "subject" ? 'e.g. "Quantum mechanics, relativity and the universe"' : undefined}>
+          <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        </Field>
+        <div className="grid grid-cols-3 gap-3">
+          <Field label="Icon" hint="Name the app knows, e.g. flask"><Input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} /></Field>
+          <Field label="Colour" hint="#7C3AED"><Input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} /></Field>
+          <Field label="Tag" hint={kind === "class" ? "SECONDARY / SENIOR" : "Core, New, Elective…"}><Input value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} /></Field>
+        </div>
+        {kind === "class" && (
+          <Field label="Smart path suggestion" hint="Shown when a student picks this class at signup">
+            <Input value={form.suggestion} onChange={(e) => setForm({ ...form, suggestion: e.target.value })} />
+          </Field>
+        )}
         {error && <Alert>{error}</Alert>}
       </div>
     </Modal>
@@ -145,7 +168,7 @@ function Syllabi() {
       {loading ? <Spinner /> : offerings.length === 0 ? (
         <EmptyState title="No syllabi" description="Create one, or just upload a book: the upload page creates the syllabus for you." />
       ) : (
-        <Table head={["Board", "Class", "Subject", "Chapters", "Students pick a book", ""]}>
+        <Table head={["Board", "Class", "Subject", "Chapters", "Students pick a book", "Unlock", ""]}>
           {offerings.map((o) => (
             <tr key={o.id} className={o.isActive ? "" : "opacity-60"}>
               <Td className="font-medium">{o.board.name}</Td>
@@ -153,6 +176,19 @@ function Syllabi() {
               <Td>{o.subject.name}</Td>
               <Td>{o._count?.chapters ?? 0}</Td>
               <Td>{o.requiresBookSelection ? <Badge color="amber">yes</Badge> : <span className="text-slate-400">no</span>}</Td>
+              <Td>
+                <Select
+                  disabled={!can(P.MANAGE_CURRICULUM)}
+                  value={o.settings?.unlock === "sequential" ? "sequential" : "open"}
+                  onChange={async (e) => {
+                    await api.patch(`/admin/offerings/${o.id}`, { settings: { ...(o.settings ?? {}), unlock: e.target.value } });
+                    reload();
+                  }}
+                >
+                  <option value="open">All open</option>
+                  <option value="sequential">In order</option>
+                </Select>
+              </Td>
               <Td className="text-right">
                 {can(P.UPLOAD_BOOKS) && (
                   <Link href={`/dashboard/books/upload?offeringId=${o.id}`} className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:underline">

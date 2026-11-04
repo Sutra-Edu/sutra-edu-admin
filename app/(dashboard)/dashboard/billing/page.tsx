@@ -14,7 +14,7 @@ interface Summary {
   pastDue: number;
   last30Days: { payments: number; amountPaise: number };
   razorpay: { configured: boolean; reason: string | null };
-  settings: { enforce: boolean; freeFeatures: string[] };
+  settings: { enforce: boolean; freeFeatures: string[]; taxPercent: number; taxInclusive: boolean };
   features: string[];
 }
 const rupees = (paise: number) => `₹${(paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
@@ -24,7 +24,7 @@ export default function BillingPage() {
   const { can } = useAuth();
   const canEdit = can(P.MANAGE_SUBSCRIPTIONS);
   const summary = useApi<Summary | null>("/admin/billing/summary", null);
-  const [tab, setTab] = useState<"plans" | "subs" | "payments">("plans");
+  const [tab, setTab] = useState<"plans" | "coupons" | "subs" | "payments">("plans");
   const s = summary.data;
 
   return (
@@ -40,7 +40,33 @@ export default function BillingPage() {
             <Card><div className="text-3xl font-semibold text-emerald-600">{rupees(s.last30Days.amountPaise)}</div><div className="text-sm text-slate-500">{s.last30Days.payments} payments in 30 days</div></Card>
           </div>
           <Paywall summary={s} canEdit={canEdit} onSaved={summary.reload} />
-          <Tabs tabs={[{ key: "plans", label: "Plans" }, { key: "subs", label: "Subscriptions" }, { key: "payments", label: "Payments" }]} value={tab} onChange={setTab} />
+          <Tabs tabs={[{ key: "plans", label: "Plans" }, { key: "coupons", label: "Promo codes" }, { key: "subs", label: "Subscriptions" }, { key: "payments", label: "Payments" }]} value={tab} onChange={setTab} />
+          {tab === "coupons" && (
+            <ResourceEditor<Any>
+              title="Promo codes" description="Percent or flat discounts. For recurring plans add the matching Razorpay offer id (Razorpay → Subscriptions → Offers); without one the student pays once for the first period."
+              listPath="/admin/billing/coupons" createPath="/admin/billing/coupons" updatePath={(r) => `/admin/billing/coupons/${r.id}`} canEdit={canEdit}
+              defaults={{ isActive: true, perUserLimit: 1 }}
+              fields={[
+                { key: "code", label: "Code", type: "text", required: true, createOnly: true, placeholder: "WELCOME50" },
+                { key: "description", label: "Description", type: "text" },
+                { key: "percentOff", label: "% off", type: "number" },
+                { key: "amountOffPaise", label: "or flat off (paise)", type: "number" },
+                { key: "planCodes", label: "Only for plans (codes, one per line)", type: "list" },
+                { key: "maxRedemptions", label: "Total uses", type: "number" },
+                { key: "perUserLimit", label: "Uses per person", type: "number" },
+                { key: "validFrom", label: "Valid from", type: "datetime" },
+                { key: "validUntil", label: "Valid until", type: "datetime" },
+                { key: "razorpayOfferId", label: "Razorpay offer id", type: "text" },
+                { key: "isActive", label: "Active", type: "checkbox" },
+              ]}
+              columns={[
+                { label: "Code", render: (r) => <><div className="font-mono font-medium">{String(r.code)}</div><div className="text-xs text-slate-500">{String(r.description ?? "")}</div></> },
+                { label: "Discount", render: (r) => r.percentOff ? `${r.percentOff}%` : rupees(Number(r.amountOffPaise ?? 0)) },
+                { label: "Used", render: (r) => `${r.redeemed}${r.maxRedemptions ? ` / ${r.maxRedemptions}` : ""}` },
+                { label: "", render: (r) => <Badge color={r.isActive ? "green" : "gray"}>{r.isActive ? "active" : "off"}</Badge> },
+              ]}
+            />
+          )}
           {tab === "plans" && (
             <ResourceEditor<Any>
               title="Plans" description="Changing a price applies to new subscribers; existing ones keep theirs until they renew on a new plan."
@@ -50,11 +76,20 @@ export default function BillingPage() {
                 { key: "code", label: "Code", type: "text", required: true, createOnly: true, placeholder: "PRO_MONTHLY" },
                 { key: "name", label: "Name", type: "text", required: true },
                 { key: "description", label: "Description", type: "textarea" },
-                { key: "pricePaise", label: "Price in paise (₹499 = 49900)", type: "number", required: true },
+                { key: "pricePaise", label: "Price in paise (₹499 = 49900; 0 = free)", type: "number", required: true },
                 { key: "interval", label: "Billed every", type: "select", required: true, options: opts(INTERVALS) },
                 { key: "trialDays", label: "Free trial days", type: "number" },
                 { key: "features", label: "Unlocks", type: "multiselect", options: s.features.map((f) => ({ value: f, label: f })) },
                 { key: "limits", label: "Limits (JSON)", type: "json", hint: '{"tutor": {"questionsPerDay": 50}}' },
+                { key: "tagline", label: "Tagline", type: "text", hint: "Under the name on the card" },
+                { key: "highlights", label: "Card bullet points (one per line)", type: "list" },
+                { key: "badge", label: "Badge", type: "text", hint: "e.g. Most popular" },
+                { key: "ctaLabel", label: "Button text", type: "text", hint: "Get started / Subscribe now / Contact sales" },
+                { key: "ctaType", label: "Button does", type: "select", options: [{ value: "checkout", label: "Checkout" }, { value: "contact", label: "Contact sales" }] },
+                { key: "contactUrl", label: "Contact link", type: "text" },
+                { key: "comparison", label: "Comparison table values (JSON)", type: "json", hint: 'Keys are the rows under App content → Plan comparison rows, e.g. {"ai_tutor": "Unlimited", "certification": true}' },
+                { key: "planGroup", label: "Group", type: "text", hint: "Same group = monthly / yearly versions of one tier (e.g. pro)" },
+                { key: "billingMode", label: "Billing", type: "select", options: [{ value: "RECURRING", label: "Recurring (autopay)" }, { value: "ONE_TIME", label: "Pay once per period" }] },
                 { key: "sortOrder", label: "Sort order", type: "number" },
                 { key: "isActive", label: "On sale", type: "checkbox" },
               ]}
@@ -78,10 +113,11 @@ export default function BillingPage() {
 function Paywall({ summary, canEdit, onSaved }: { summary: Summary; canEdit: boolean; onSaved: () => void }) {
   const [enforce, setEnforce] = useState(summary.settings.enforce);
   const [free, setFree] = useState(summary.settings.freeFeatures);
+  const [tax, setTax] = useState({ percent: String(summary.settings.taxPercent ?? 18), inclusive: summary.settings.taxInclusive ?? true });
   const [msg, setMsg] = useState<string | null>(null);
   const save = async () => {
     try {
-      await api.patch("/admin/billing/settings", { enforce, freeFeatures: free });
+      await api.patch("/admin/billing/settings", { enforce, freeFeatures: free, taxPercent: Number(tax.percent) || 0, taxInclusive: tax.inclusive });
       setMsg("Saved");
       onSaved();
     } catch (err) {
@@ -99,7 +135,11 @@ function Paywall({ summary, canEdit, onSaved }: { summary: Summary; canEdit: boo
             <Checkbox key={f} disabled={!canEdit} label={f} checked={free.includes(f)} onChange={(e) => setFree(e.target.checked ? [...free, f] : free.filter((x) => x !== f))} />
           ))}
         </div>
-        {canEdit && <Button onClick={save}>Save paywall</Button>}
+        <div className="flex flex-wrap items-end gap-4 pt-2">
+          <Field label="GST %"><Input type="number" disabled={!canEdit} value={tax.percent} onChange={(e) => setTax({ ...tax, percent: e.target.value })} /></Field>
+          <Checkbox disabled={!canEdit} label="Prices include GST" checked={tax.inclusive} onChange={(e) => setTax({ ...tax, inclusive: e.target.checked })} />
+        </div>
+        {canEdit && <Button onClick={save}>Save paywall & tax</Button>}
         {msg && <div className="text-sm text-slate-600">{msg}</div>}
       </div>
     </Card>

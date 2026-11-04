@@ -28,6 +28,7 @@ export interface Offering {
   subjectId: string;
   requiresBookSelection: boolean;
   isActive: boolean;
+  settings?: { unlock?: string } | null;
   board: CatalogItem;
   class: CatalogItem;
   subject: CatalogItem;

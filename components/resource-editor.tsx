@@ -12,7 +12,7 @@ import { Alert, Button, Card, Checkbox, EmptyState, Field, Input, Modal, Select,
 export type FieldDef = {
   key: string;
   label: string;
-  type: "text" | "textarea" | "number" | "select" | "checkbox" | "json" | "multiselect";
+  type: "text" | "textarea" | "number" | "select" | "checkbox" | "json" | "multiselect" | "datetime" | "list";
   options?: { value: string; label: string }[];
   hint?: string;
   required?: boolean;
@@ -87,6 +87,11 @@ export function ResourceEditor<T extends Row>({
 function toText(f: FieldDef, v: unknown): string {
   if (v === undefined || v === null) return f.type === "json" ? "" : "";
   if (f.type === "json") return JSON.stringify(v, null, 2);
+  if (f.type === "list") return (v as string[]).join("\n");
+  if (f.type === "datetime") {
+    const d = new Date(String(v));
+    return Number.isNaN(d.getTime()) ? "" : new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  }
   return String(v);
 }
 
@@ -110,6 +115,8 @@ function EditModal({ title, fields, initial, isNew, onClose, onSave }: {
         if (f.type === "checkbox" || f.type === "multiselect") v = raw;
         else if (f.type === "number") v = raw === "" ? undefined : Number(raw);
         else if (f.type === "json") v = (raw as string).trim() ? JSON.parse(raw as string) : undefined;
+        else if (f.type === "list") v = (raw as string).split("\n").map((x) => x.trim()).filter(Boolean);
+        else if (f.type === "datetime") v = (raw as string) ? new Date(raw as string).toISOString() : undefined;
         else v = (raw as string).trim() === "" ? undefined : (raw as string).trim();
         if (f.required && (v === undefined || v === "")) throw new Error(`${f.label} is required`);
         // On edit, send only what changed
@@ -140,8 +147,10 @@ function EditModal({ title, fields, initial, isNew, onClose, onSave }: {
           if (f.type === "checkbox") return <Checkbox key={f.key} label={f.label} description={f.hint} checked={!!v} onChange={(e) => set(e.target.checked)} />;
           return (
             <Field key={f.key} label={f.label} hint={f.hint} required={f.required}>
-              {f.type === "textarea" || f.type === "json" ? (
-                <Textarea rows={f.type === "json" ? 6 : 3} className={f.type === "json" ? "font-mono text-xs" : ""} value={v as string} placeholder={f.placeholder} onChange={(e) => set(e.target.value)} />
+              {f.type === "datetime" ? (
+                <Input type="datetime-local" value={v as string} onChange={(e) => set(e.target.value)} />
+              ) : f.type === "textarea" || f.type === "json" || f.type === "list" ? (
+                <Textarea rows={f.type === "json" ? 6 : f.type === "list" ? 4 : 3} className={f.type === "json" ? "font-mono text-xs" : ""} value={v as string} placeholder={f.placeholder} onChange={(e) => set(e.target.value)} />
               ) : f.type === "select" ? (
                 <Select value={v as string} onChange={(e) => set(e.target.value)}>
                   <option value="">—</option>
