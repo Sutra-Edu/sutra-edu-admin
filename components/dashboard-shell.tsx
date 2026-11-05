@@ -37,7 +37,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { name: "Processing Jobs", href: "/dashboard/jobs", icon: ListChecks, permission: [P.VIEW_JOBS] },
       { name: "Tests & Assessments", href: "/dashboard/assessments", icon: ListTodo, permission: [P.MANAGE_ASSESSMENTS] },
       { name: "Study Materials", href: "/dashboard/materials", icon: FolderOpen, permission: [P.MANAGE_CONTENT_SETTINGS, P.MANAGE_BOOKS] },
-      { name: "Live Classes", href: "/dashboard/live-classes", icon: Radio, permission: [P.MANAGE_CONTENT_SETTINGS] },
+      { name: "Lecture Premieres", href: "/dashboard/lectures", icon: Radio, permission: [P.MANAGE_CONTENT_SETTINGS] },
       { name: "App Content", href: "/dashboard/app-content", icon: FileText, permission: [P.MANAGE_CONTENT_SETTINGS, P.MANAGE_CURRICULUM] },
       { name: "Games", href: "/dashboard/games", icon: Gamepad2, permission: [P.MANAGE_GAMES] },
       { name: "Rewards & Avatar", href: "/dashboard/gamification", icon: Medal, permission: [P.VIEW_GAMIFICATION] },
