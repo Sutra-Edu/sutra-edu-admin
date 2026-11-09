@@ -148,5 +148,7 @@ export interface ModelConfig {
   params: Record<string, unknown> | null;
   isActive: boolean;
   timeoutMs: number;
+  workload: "ANY" | "LIVE" | "BATCH";
+  pricing: Record<string, number> | null;
   updatedAt: string;
 }
