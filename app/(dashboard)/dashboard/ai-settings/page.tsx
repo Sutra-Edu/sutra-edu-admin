@@ -13,7 +13,7 @@ interface Settings {
   tutor: { verifyCitations: boolean; moderation: boolean; allowWeb: boolean; passages: number };
   autopilot: {
     enabled: boolean; outputs: Output[]; languages: string[]; games: boolean; maxGamesPerTopic: number; itemsPerGame: number;
-    mapTopics: boolean; requireConfirmedRanges: boolean;
+    mapTopics: boolean; requireConfirmedRanges: boolean; questions: boolean; questionsPerTopic: number;
   };
 }
 
@@ -91,7 +91,15 @@ function Editor({ initial, reload, notice, setNotice }: { initial: Settings; rel
             <Checkbox disabled={!canEdit} checked={auto.requireConfirmedRanges} onChange={(e) => setAuto({ ...auto, requireConfirmedRanges: e.target.checked })}
               label="Wait for a person to confirm topic pages before making content" description="Safer and cheaper (nothing is made from a wrong mapping), but slower." />
             <div>
-              <div className="text-sm font-medium text-slate-700 mb-2">Make for every topic</div>
+              <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                <div className="text-sm font-medium text-slate-700">Make for every topic</div>
+                {canEdit && (
+                  <Button size="sm" variant="secondary" onClick={() => setAuto({
+                    ...auto, outputs: [{ kind: "VIDEO", purpose: "explainer" }, { kind: "TEXT", purpose: "notes" }], games: false, questions: false,
+                  })}>Videos + notes only</Button>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 mb-2">“Videos + notes only” is the first-release setup: one explainer video and revision notes per topic, nothing else. Save afterwards.</p>
               <div className="grid sm:grid-cols-2 gap-2">
                 {OUTPUTS.map((o) => (
                   <Checkbox key={`${o.kind}-${o.purpose}`} disabled={!canEdit} label={o.label}
@@ -103,6 +111,11 @@ function Editor({ initial, reload, notice, setNotice }: { initial: Settings; rel
             <Field label="Languages" hint="Comma-separated codes, e.g. en, hi, hinglish. Empty = each book's own language. Every language multiplies the work.">
               <Input disabled={!canEdit} value={languages} onChange={(e) => setLanguages(e.target.value)} placeholder="book's language" />
             </Field>
+            <Checkbox disabled={!canEdit} checked={auto.questions} onChange={(e) => setAuto({ ...auto, questions: e.target.checked })}
+              label="Draft practice questions for every topic" description="The question bank for tests, exams and revision quizzes." />
+            {auto.questions && (
+              <Field label="Questions per topic"><Input type="number" min={1} max={50} disabled={!canEdit} value={auto.questionsPerTopic} onChange={(e) => setAuto({ ...auto, questionsPerTopic: Number(e.target.value) })} /></Field>
+            )}
             <Checkbox disabled={!canEdit} checked={auto.games} onChange={(e) => setAuto({ ...auto, games: e.target.checked })} label="Draft game rounds for every topic" />
             <div className="grid grid-cols-2 gap-4">
               <Field label="Games per topic"><Input type="number" min={0} max={10} disabled={!canEdit} value={auto.maxGamesPerTopic} onChange={(e) => setAuto({ ...auto, maxGamesPerTopic: Number(e.target.value) })} /></Field>

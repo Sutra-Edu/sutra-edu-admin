@@ -17,7 +17,7 @@ interface Result { book: { id: string; code: string; title: string }; file: Book
 
 const EMPTY_FORM = {
   title: "", language: "en", publisher: "", edition: "", author: "", isbn: "", code: "", fileLabel: "",
-  contentRelation: "SAME_SYLLABUS_VARIATION", activate: true,
+  contentRelation: "SAME_SYLLABUS_VARIATION", activate: true, kind: "TEXTBOOK",
 };
 
 export default function UploadPage() {
@@ -95,7 +95,7 @@ function UploadForm() {
   }), [boards, classes, subjects, boardId, classId, subjectId]);
 
   const metadata = () => {
-    const body: Record<string, string | boolean> = { title: form.title.trim(), language: form.language, contentRelation: form.contentRelation, activate: form.activate };
+    const body: Record<string, string | boolean> = { title: form.title.trim(), language: form.language, contentRelation: form.contentRelation, activate: form.activate, kind: form.kind };
     for (const k of ["publisher", "edition", "author", "isbn", "code", "fileLabel"] as const) {
       if (form[k].trim()) body[k] = k === "code" ? form[k].trim().toLowerCase() : form[k].trim();
     }
@@ -241,6 +241,16 @@ function UploadForm() {
 
           <Card title="2. Book details">
             <div className="grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <Field label="What is this file?" hint={form.kind === "NOTES"
+                  ? "Your own teaching notes. The AI reads them together with the textbook when it makes each topic's videos and notes; students never see this file as a book."
+                  : "The book students study from."}>
+                  <Select value={form.kind} onChange={set("kind")}>
+                    <option value="TEXTBOOK">Textbook</option>
+                    <option value="NOTES">Notes (used by the AI with the textbook)</option>
+                  </Select>
+                </Field>
+              </div>
               <div className="sm:col-span-2">
                 <Field label="Title" required>
                   <Input value={form.title} onChange={set("title")} placeholder="e.g. Science Textbook for Class 10" required />

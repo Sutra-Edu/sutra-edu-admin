@@ -112,13 +112,13 @@ function Sidebooks() {
   const [editing, setEditing] = useState<Book | null>(null);
   return (
     <Card title="How each book appears in the app">
-      <p className="text-sm text-slate-500 mb-4">Textbooks are the syllabus books. Sidebooks are supplementary guides on the &quot;Select your sidebook&quot; screen; give them a cover and description.</p>
+      <p className="text-sm text-slate-500 mb-4">Textbooks are the syllabus books. Sidebooks are supplementary guides on the &quot;Select your sidebook&quot; screen; give them a cover and description. Notes are your own teaching notes: the AI uses them together with the textbook when it makes each topic&apos;s videos, and students never see them as a book.</p>
       {books.loading ? <Spinner /> : (
         <Table head={["Book", "Kind", ""]}>
           {books.data.map((b) => (
             <tr key={b.id}>
               <Td><div className="font-medium">{b.title}</div><div className="text-xs text-slate-500">{b.code}</div></Td>
-              <Td><Badge color={b.kind === "SIDEBOOK" ? "purple" : "gray"}>{(b.kind ?? "TEXTBOOK").toLowerCase()}</Badge>{b.isPremium && <Badge color="amber">premium</Badge>}</Td>
+              <Td><Badge color={b.kind === "SIDEBOOK" ? "purple" : b.kind === "NOTES" ? "blue" : "gray"}>{(b.kind ?? "TEXTBOOK").toLowerCase()}</Badge>{b.isPremium && <Badge color="amber">premium</Badge>}</Td>
               <Td>{can(P.MANAGE_BOOKS) && <Button size="sm" variant="secondary" onClick={() => setEditing(b)}>Edit</Button>}</Td>
             </tr>
           ))}
@@ -153,6 +153,7 @@ function BookModal({ book, onClose }: { book: Book; onClose: () => void }) {
           <Select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}>
             <option value="TEXTBOOK">Textbook</option>
             <option value="SIDEBOOK">Sidebook</option>
+            <option value="NOTES">Notes (used by the AI with the textbook, not shown as a book)</option>
           </Select>
         </Field>
         <Field label="Description"><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
